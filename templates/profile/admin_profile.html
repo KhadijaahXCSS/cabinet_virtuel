@@ -1,0 +1,60 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6">
+  <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="bg-blue-700 px-6 py-4 text-white">
+      <h1 class="text-2xl font-bold">Profil Administrateur</h1>
+    </div>
+    
+    <div class="p-6 grid md:grid-cols-3 gap-6">
+      <!-- Informations personnelles -->
+      <div class="md:col-span-1">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Informations personnelles</h2>
+          <div class="space-y-3">
+            <p><span class="font-medium">Nom complet:</span> {{ profile_data.full_name }}</p>
+            <p><span class="font-medium">Email:</span> {{ profile_data.email }}</p>
+            <p><span class="font-medium">Téléphone:</span> {{ profile_data.phone|default:"Non renseigné" }}</p>
+            <p><span class="font-medium">Rôle:</span> {{ profile_data.role }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Statistiques -->
+      <div class="md:col-span-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-green-100 p-4 rounded-lg">
+            <h3 class="font-medium text-green-800">Patients</h3>
+            <p class="text-2xl font-bold">{{ stats.total_patients }}</p>
+          </div>
+          <div class="bg-blue-100 p-4 rounded-lg">
+            <h3 class="font-medium text-blue-800">Médecins</h3>
+            <p class="text-2xl font-bold">{{ stats.total_doctors }}</p>
+          </div>
+          <div class="bg-yellow-100 p-4 rounded-lg">
+            <h3 class="font-medium text-yellow-800">En attente</h3>
+            <p class="text-2xl font-bold">{{ stats.pending_doctors }}</p>
+          </div>
+        </div>
+        
+        <!-- Actions rapides -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Actions administratives</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'admin_patients_list' %}" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+              Gérer les patients
+            </a>
+            <a href="#" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+              Valider les médecins
+            </a>
+            <a href="#" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+              Voir les rapports
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

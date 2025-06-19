@@ -1,0 +1,87 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6">
+  <div class="bg-white shadow rounded-lg overflow-hidden">
+    <!-- En-tête -->
+    <div class="bg-green-600 px-6 py-4 text-white">
+      <div class="flex items-center space-x-4">
+        {% if profile_data.profile_picture %}
+        <img src="{{ profile_data.profile_picture }}" alt="Photo de profil" class="w-20 h-20 rounded-full object-cover border-2 border-white">
+        {% else %}
+        <div class="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white text-2xl font-bold">
+          {{ profile_data.full_name|first|upper }}
+        </div>
+        {% endif %}
+        <div>
+          <h1 class="text-2xl font-bold">{{ profile_data.full_name }}</h1>
+          <p>{{ profile_data.birth_date|date:"d/m/Y" }} ({{ profile_data.age }} ans)</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Contenu -->
+    <div class="p-6 grid md:grid-cols-2 gap-6">
+      <!-- Informations personnelles -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Informations personnelles</h2>
+        <div class="space-y-3">
+          <p><span class="font-medium">Email:</span> {{ profile_data.email }}</p>
+          <p><span class="font-medium">Téléphone:</span> {{ profile_data.phone|default:"Non renseigné" }}</p>
+          <p><span class="font-medium">Adresse:</span> {{ profile_data.address|default:"Non renseignée" }}</p>
+          <p><span class="font-medium">Genre:</span> {{ profile_data.gender }}</p>
+        </div>
+      </div>
+      
+      <!-- Informations médicales -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Informations médicales</h2>
+        <div class="space-y-3">
+          <p><span class="font-medium">Groupe sanguin:</span> {{ profile_data.blood_group|default:"Non renseigné" }}</p>
+          <p><span class="font-medium">Taille/Poids:</span> 
+            {% if profile_data.height and profile_data.weight %}
+              {{ profile_data.height }} cm / {{ profile_data.weight }} kg
+            {% else %}
+              Non renseignés
+            {% endif %}
+          </p>
+          <p><span class="font-medium">Allergies:</span> {{ profile_data.allergies|default:"Aucune connue" }}</p>
+        </div>
+      </div>
+      
+      <!-- Statistiques -->
+      <div class="md:col-span-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-blue-100 p-4 rounded-lg">
+            <h3 class="font-medium text-blue-800">Total RDV</h3>
+            <p class="text-2xl font-bold">{{ stats.total_rdv }}</p>
+          </div>
+          <div class="bg-green-100 p-4 rounded-lg">
+            <h3 class="font-medium text-green-800">RDV à venir</h3>
+            <p class="text-2xl font-bold">{{ stats.upcoming_rdv }}</p>
+          </div>
+          <div class="bg-purple-100 p-4 rounded-lg">
+            <h3 class="font-medium text-purple-800">RDV passés</h3>
+            <p class="text-2xl font-bold">{{ stats.past_rdv }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="md:col-span-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a href="{% url 'demander_rendezvous' %}" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+            Prendre RDV
+          </a>
+          <a href="{% url 'liste_rendezvous_patient' %}" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+            Mes rendez-vous
+          </a>
+          <a href="#" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+            Mon historique
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

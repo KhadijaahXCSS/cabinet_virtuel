@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+ 
+
+  <div class="relative isolate px-6 pt-32 lg:px-8 bg-gray-clair min-h-screen">
+    <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+      <div class="text-center">
+        <h1 class="text-5xl font-bold tracking-tight text-blue-fonce sm:text-7xl">
+          CABINET VIRTUEL
+        </h1>
+        <p class="mt-8 text-lg text-gray-moyen sm:text-xl">
+          Une plateforme numerique moderne pour prendre rendez-vous avec votre medecin en toute simplicite.
+        </p>
+        <div class="mt-10 flex items-center justify-center gap-x-6">
+          <a href="{% url "demander_rendezvous" %}" class="rounded-md bg-orange-brand px-4 py-3 text-sm font-semibold text-white shadow hover:bg-blue-clair focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-fonce">
+            Prendre rendez-vous
+          </a>
+          <a href="#" class="text-sm font-semibold text-blue-fonce">
+            En savoir plus <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    
+
+{% endblock %}

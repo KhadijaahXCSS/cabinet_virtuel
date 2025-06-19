@@ -1,0 +1,73 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow overflow-hidden max-w-3xl mx-auto">
+        
+        <div class="px-6 py-4 border-b bg-gray-50">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold text-gray-800">Details du rendez-vous</h1>
+                <span class="px-3 py-1 rounded-full text-sm font-medium 
+                    {% if rdv.statut == 'confirme' %}bg-green-100 text-green-800
+                    {% elif rdv.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ rdv.get_statut_display }}
+                </span>
+            </div>
+        </div>
+
+       
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Medecin</h3>
+                    <div class="mt-1 flex items-center">
+                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-user-md text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-lg font-medium">Dr {{ rdv.docteur.user.nom}}</p>
+                            <p class="text-sm text-gray-500">{{ rdv.docteur.specialite }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Date & Heure</h3>
+                    <p class="mt-1 text-lg">{{ rdv.date|date:"l j F Y" }}</p>
+                    <p class="text-gray-500">{{ rdv.heure|time:"H:i" }}</p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-500">Motif</h3>
+                <p class="mt-1 text-gray-900">{{ rdv.titre }}</p>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-500">Lieu</h3>
+                <p class="mt-1 text-gray-900">{{ rdv.lieu }}</p>
+            </div>
+
+            
+            <div class="border-t pt-6 flex justify-between">
+                <a href="{% url 'liste_rendezvous_patient' %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i> Retour
+                </a>
+                
+                {% if peut_annuler %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="annuler" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-times mr-2"></i> Annuler le RDV
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

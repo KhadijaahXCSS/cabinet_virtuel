@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cabinet Virtuel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'orange-brand': '#ff6700',
+            'gray-clair': '#ebebeb',
+            'gray-moyen': '#c0c0c0',
+            'blue-clair': '#3a6ea5',
+            'blue-fonce': '#004e98',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white font-[Montserrat]">
+ {% include "partials/header.html" %}
+
+ {% block content %}
+
+ {% endblock content%}
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6">
+  <div class="bg-white shadow rounded-lg overflow-hidden">
+    <!-- En-tête -->
+    <div class="bg-blue-600 px-6 py-4 text-white">
+      <div class="flex items-center space-x-4">
+        {% if profile_data.profile_picture %}
+        <img src="{{ profile_data.profile_picture }}" alt="Photo de profil" class="w-20 h-20 rounded-full object-cover border-2 border-white">
+        {% else %}
+        <div class="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+          {{ profile_data.full_name|first|upper }}
+        </div>
+        {% endif %}
+        <div>
+          <h1 class="text-2xl font-bold">Dr. {{ profile_data.full_name }}</h1>
+          <p>{{ profile_data.specialite }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Contenu -->
+    <div class="p-6 grid md:grid-cols-3 gap-6">
+      <!-- Colonne gauche - Informations -->
+      <div class="md:col-span-1">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Informations professionnelles</h2>
+          <div class="space-y-3">
+            <p><span class="font-medium">Spécialité:</span> {{ profile_data.specialite }}</p>
+            <p><span class="font-medium">Années d'expérience:</span> {{ profile_data.experience }}</p>
+            <p><span class="font-medium">Tarif consultation:</span> {{ profile_data.consultation_fee }} €</p>
+            <p><span class="font-medium">Statut:</span> 
+              <span class="px-2 py-1 rounded-full text-xs {% if profile_data.est_approuve %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {% if profile_data.est_approuve %}Actif{% else %}En attente{% endif %}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Colonne droite - Statistiques et actions -->
+      <div class="md:col-span-2">
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-blue-100 p-4 rounded-lg">
+            <h3 class="font-medium text-blue-800">RDV aujourd'hui</h3>
+            <p class="text-2xl font-bold">{{ stats.rdv_today }}</p>
+          </div>
+          <div class="bg-green-100 p-4 rounded-lg">
+            <h3 class="font-medium text-green-800">RDV ce mois</h3>
+            <p class="text-2xl font-bold">{{ stats.rdv_month }}</p>
+          </div>
+          <div class="bg-purple-100 p-4 rounded-lg">
+            <h3 class="font-medium text-purple-800">Créneaux disponibles</h3>
+            <p class="text-2xl font-bold">{{ stats.available_slots }}</p>
+          </div>
+        </div>
+        
+        <!-- Actions rapides -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Actions rapides</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'planning_docteur' %}" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+              Gérer mon planning
+            </a>
+            <a href="{% url 'liste_rendezvous_docteur' %}" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+              Voir mes rendez-vous
+            </a>
+            <a href="#" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+              Mes patients
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

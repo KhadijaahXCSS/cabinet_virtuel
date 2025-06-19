@@ -1,0 +1,42 @@
+<header class="absolute inset-x-0 top-0 z-50">
+  <nav class="flex items-center justify-between p-6 lg:px-8 bg-[#004e98] text-white" aria-label="Global">
+
+    <!-- LOGO -->
+    <div class="flex-shrink-0">
+      <span class="text-xl font-bold tracking-wide text-white">JammRekk</span>
+    </div>
+
+    <!-- ONGLET CENTRAL -->
+    <div class="hidden lg:flex gap-x-12">
+      <a href="{% url 'index' %}" class="text-sm font-bold text-white">Accueil</a>
+
+      {% if request.user.is_authenticated %}
+        {% if request.user.role == 'patient' %}
+          <a href="{% url 'patient_dashboard' %}" class="text-sm font-bold text-white">Mon Tableau de Bord</a>
+          <a href="{% url 'liste_rendezvous_patient' %}" class="text-sm font-bold text-white">Mes Rendez-Vous</a>
+        {% elif request.user.role == 'docteur' %}
+          <a href="{% url 'docteur_dashboard' %}" class="text-sm font-bold text-white">Mon Planning</a>
+        {% endif %}
+
+        {% if request.user.is_superuser %}
+          <a href="{% url 'admed_dashboard' %}" class="text-sm font-bold text-white">Administration</a>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- BOUTON DROITE -->
+    <div class="hidden lg:flex">
+      {% if request.user.is_authenticated %}
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="text-sm font-bold text-white hover:opacity-70 bg-transparent border-0 p-0 cursor-pointer">
+            Déconnexion
+          </button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" class="text-sm font-bold text-white">Se connecter &rarr;</a>
+      {% endif %}
+    </div>
+
+  </nav>
+</header>

@@ -1,0 +1,216 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Bonjour Dr {{ request.user.nom }}</h1>
+            <p class="text-gray-500">{% now "l j F Y" %}</p>
+        </div>
+        <div class="flex space-x-4">
+            <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-calendar-day mr-2"></i>
+                <span>{{ today_rdv.count }} RDV aujourd'hui</span>
+            </div>
+            <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-user-md mr-2"></i>
+                <span>{{ specialite.nom }}</span>
+            </div>
+        </div>
+    </div>
+
+   
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!--  Prochains RDV -->
+        <div class="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
+            <div class="flex items-center mb-4">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Prochain RDV</h3>
+            </div>
+            {% if next_rdv %}
+            <div class="pl-16">
+                <p class="font-medium text-gray-800">{{ next_rdv.patient.user.nom }} {{ next_rdv.patient.user.prenom }}</p>
+                <p class="text-gray-500">
+                    <i class="far fa-clock mr-1"></i> 
+                    {{ next_rdv.heure|time:"H:i" }} - {{ next_rdv.get_status_display }}
+                </p>
+                <p class="text-sm mt-2 text-gray-400">
+                    <i class="fas fa-comment-medical mr-1"></i> 
+                    {{ next_rdv.motif|default:"Aucun motif précise"|truncatechars:30 }}
+                </p>
+            </div>
+            {% else %}
+            <p class="text-gray-400 italic pl-16">Aucun rendez-vous a venir</p>
+            {% endif %}
+        </div>
+
+        <!--  Statistiques -->
+        <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-500">
+            <div class="flex items-center mb-4">
+                <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                    <i class="fas fa-chart-bar text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Votre activite</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-4 pl-16">
+                <div>
+                    <p class="text-2xl font-bold text-gray-800">{{ monthly_rdv }}</p>
+                    <p class="text-sm text-gray-500">Ce mois</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-800">{{ completed_rdv }}</p>
+                    <p class="text-sm text-gray-500">Termines</p>
+                </div>
+            </div>
+        </div>
+
+        <!--  Disponibilite -->
+        <div class="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500">
+            <div class="flex items-center mb-4">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                    <i class="fas fa-calendar-alt text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Vos disponibilites</h3>
+            </div>
+             <div class="pl-16">
+                <p class="text-gray-800 mb-2">Prochains creneaux ouverts :</p>
+                <ul class="list-disc list-inside text-sm text-gray-600">
+                    {% for slot in available_slots|slice:":3" %}
+                    <li>{{ slot.jour|date:"d/m/Y" }} - {{ slot.heure_debut|time:"H:i" }} à {{ slot.heure_fin|time:"H:i" }}</li>
+                    {% empty %}
+                    <li class="text-gray-400">Aucun creneau disponible</li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'planning_docteur' %}" class="text-purple-600 text-sm mt-2 inline-block hover:underline">
+                    Gerer mes creneaux <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+ 
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!--  RDV du jour -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">
+                        <i class="fas fa-list-alt mr-2 text-blue-500"></i> 
+                        Rendez-vous aujourd'hui
+                    </h2>
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                        {{ today_rdv.count }} au total
+                    </span>
+                </div>
+                <div class="divide-y">
+                    {% for rdv in today_rdv %}
+                    <div class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-medium flex items-center">
+                                    <span class="w-3 h-3 rounded-full mr-2 
+                                        {% if rdv.status == 'confirmed' %}bg-green-500
+                                        {% elif rdv.status == 'pending' %}bg-yellow-500
+                                        {% else %}bg-gray-500{% endif %}"></span>
+                                    {{ rdv.patient.user.nom }} {{ rdv.patient.user.prenom }}
+                                </p>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    <i class="fas fa-comment-medical mr-1"></i> 
+                                    {{ rdv.motif|default:"Aucun motif precis"|truncatechars:40 }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium">{{ rdv.heure|time:"H:i" }}</p>
+                                <div class="flex space-x-2 mt-1 justify-end">
+                                    <a href="#" class="text-blue-500 hover:text-blue-700">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="#" class="text-green-500 hover:text-green-700">
+                                        <i class="fas fa-check"></i>
+                                    </a>
+                                    <a href="#" class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center text-gray-400">
+                        <i class="far fa-calendar-times text-3xl mb-2"></i>
+                        <p>Aucun rendez-vous prevu aujourd'hui</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+       
+        <div class="space-y-6">
+            <!-- Actions rapides -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="font-semibold text-lg mb-4 flex items-center">
+                    <i class="fas fa-bolt mr-2 text-yellow-500"></i> 
+                    Actions rapides
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="#" class="p-3 border rounded-lg text-center hover:bg-blue-50 transition-colors">
+                        <i class="fas fa-calendar-plus text-blue-500 text-xl mb-1"></i>
+                        <p class="text-sm">Ajouter un RDV</p>
+                    </a>
+                    <a href="#" class="p-3 border rounded-lg text-center hover:bg-green-50 transition-colors">
+                        <i class="fas fa-user-clock text-green-500 text-xl mb-1"></i>
+                        <p class="text-sm">Gerer les attentes</p>
+                    </a>
+                    <a href="#" class="p-3 border rounded-lg text-center hover:bg-purple-50 transition-colors">
+                        <i class="fas fa-file-prescription text-purple-500 text-xl mb-1"></i>
+                        <p class="text-sm">Rediger ordonnance</p>
+                    </a>
+                    <a href="#" class="p-3 border rounded-lg text-center hover:bg-red-50 transition-colors">
+                        <i class="fas fa-procedures text-red-500 text-xl mb-1"></i>
+                        <p class="text-sm">Urgence</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dossiers recents -->
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="px-6 py-4 border-b">
+                    <h3 class="font-semibold text-lg flex items-center">
+                        <i class="fas fa-folder-open mr-2 text-gray-500"></i> 
+                        Dossiers recents
+                    </h3>
+                </div>
+                <div class="divide-y">
+                    {% for patient in recent_patients %}
+                    <div class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                                {{ patient.user.get_initials }}
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">{{ patient.user.nom }} {{ patient.user.prenom }}</p>
+                                <p class="text-sm text-gray-500">
+                                    Derniere visite : {{ patient.last_visit|date:"d/m/Y"|default:"Jamais" }}
+                                </p>
+                            </div>
+                            <a href="#" class="text-blue-500 hover:text-blue-700">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center text-gray-400">
+                        Aucun dossier recent
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

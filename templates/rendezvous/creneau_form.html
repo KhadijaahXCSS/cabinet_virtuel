@@ -1,0 +1,108 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md mx-auto">
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      
+      <div class="bg-indigo-600 px-6 py-4">
+        <h2 class="text-xl font-semibold text-white">
+          {% if object %}Modifier{% else %}Ajouter{% endif %} un creneau
+        </h2>
+      </div>
+
+      
+      <form method="post" class="px-6 py-6">
+        {% csrf_token %}
+        
+        <div class="space-y-6">
+          {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ field.label }}
+              {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+            </label>
+            
+            {% if field.field.widget.input_type == 'select' %}
+              <select id="{{ field.id_for_label }}" name="{{ field.name }}"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                {% for choice in field.field.choices %}
+                <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>
+                  {{ choice.1 }}
+                </option>
+                {% endfor %}
+              </select>
+            {% else %}
+              <input type="{{ field.field.widget.input_type }}" id="{{ field.id_for_label }}" name="{{ field.name }}"
+                value="{{ field.value|default:'' }}"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                {% if field.field.required %}required{% endif %}>
+            {% endif %}
+            
+            {% if field.help_text %}
+              <p class="mt-2 text-sm text-gray-500">{{ field.help_text }}</p>
+            {% endif %}
+            
+            {% for error in field.errors %}
+              <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+
+        
+        <div class="mt-8 flex justify-end space-x-3">
+          <a href="{% url 'planning_docteur' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Annuler
+          </a>
+          <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  const dateFields = document.querySelectorAll('input[type="date"]');
+  const timeFields = document.querySelectorAll('input[type="time"]');
+  
+  dateFields.forEach(field => {
+    field.classList.add('pr-10');
+    field.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNOCA3VjNtOCA0VjNtLTkgOGgxMGEyIDIgMCAwMDItMnYtOGEyIDIgMCAwMC0yLTJoLTEwYTIgMiAwIDAwLTIgMnY4YTIgMiAwIDAwMiAyeiIvPjwvc3ZnPg==')";
+    field.style.backgroundRepeat = "no-repeat";
+    field.style.backgroundPosition = "right 0.5rem center";
+    field.style.backgroundSize = "1.5em 1.5em";
+  });
+  
+  timeFields.forEach(field => {
+    field.classList.add('pr-10');
+    field.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIvPjxwb2x5bGluZSBwb2ludHM9IjEyIDYgMTIgMTIgMTYgMTQiLz48L3N2Zz4=')";
+    field.style.backgroundRepeat = "no-repeat";
+    field.style.backgroundPosition = "right 0.5rem center";
+    field.style.backgroundSize = "1.5em 1.5em";
+  });
+});
+</script>
+
+<style>
+  /* Amelioration pour les selects */
+  select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+   
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-blue-800">Tableau de Bord Administrateur</h1>
+        <div class="text-sm text-gray-500">
+            {% now "j F Y" %}
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Carte Utilisateurs -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                    <i class="fas fa-users text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500">Utilisateurs</p>
+                    <h3 class="text-2xl font-bold">{{ total_users }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte Patients -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                    <i class="fas fa-user-injured text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500">Patients</p>
+                    <h3 class="text-2xl font-bold">{{ total_patients }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte Medecins -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                    <i class="fas fa-user-md text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500">Medecins</p>
+                    <h3 class="text-2xl font-bold">{{ total_doctors }}</h3>
+                    {% if pending_doctors > 0 %}
+                    <span class="text-sm text-red-500">{{ pending_doctors }} en attente</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte RDV -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600 mr-4">
+                    <i class="fas fa-calendar-check text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500">Rendez-vous</p>
+                    <h3 class="text-2xl font-bold">{{ total_rdv }}</h3>
+                    <span class="text-sm">{{ today_rdv|length }} aujourd'hui</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-2 space-y-6">
+            <!-- RDV du jour -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="px-6 py-4 border-b">
+                    <h2 class="text-xl font-semibold">Rendez-vous du jour</h2>
+                </div>
+                <div class="divide-y">
+                    {% for rdv in today_rdv %}
+                    <div class="p-4 hover:bg-gray-50">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-medium">{{ rdv.patient.user.get_full_name}}</p>
+                                <p class="text-sm text-gray-500">Avec Dr {{ rdv.docteur.user.nom }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium">{{ rdv.heure|time:"H:i" }}</p>
+                                <p class="text-sm text-gray-500">{{ rdv.date|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center text-gray-500">
+                        Aucun rendez-vous aujourd'hui
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Derniers RDV -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="px-6 py-4 border-b">
+                    <h2 class="text-xl font-semibold">Derniers rendez-vous</h2>
+                </div>
+                <div class="divide-y">
+                    {% for rdv in latest_rdv %}
+                    <div class="p-4 hover:bg-gray-50">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-medium">{{ rdv.patient.user.get_full_name }}</p>
+                                <p class="text-sm text-gray-500">{{ rdv.docteur.specialite.nom }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium">{{ rdv.date|date:"d/m/Y" }}</p>
+                                <p class="text-sm text-gray-500">{{ rdv.heure|time:"H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="space-y-6">
+           <!-- Médecins en attente -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b">
+        <h2 class="text-xl font-semibold">Medecins en attente ({{ pending_doctors }})</h2>
+    </div>
+    <div class="divide-y">
+        {% for doctor in pending_doctors_list %}
+        <div class="p-4 hover:bg-gray-50">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="font-medium">Dr {{ doctor.user.nom }}</p>
+                    <p class="text-sm text-gray-500">{{ doctor.user.email }}</p>
+                </div>
+                <a href="{% url 'approuve_docteur' doctor.id %}" 
+                   class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+                    Approuver
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-gray-500">
+            Aucun medecin en attente
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+            <!-- Derniers inscrits -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="px-6 py-4 border-b">
+                    <h2 class="text-xl font-semibold">Derniers inscrits</h2>
+                </div>
+                <div class="divide-y">
+                    {% for user in latest_users %}
+                    <div class="p-4 hover:bg-gray-50">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                                <span class="text-gray-600">{{ user.get_initials }}</span>
+                            </div>
+                            <div>
+                                <p class="font-medium">{{ user.get_full_name }}</p>
+                                <p class="text-sm text-gray-500">
+                                    {{ user.role|capfirst }} • {{ user.date_joined|timesince }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Liste des Rendez-vous{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Vos Rendez-vous</h2>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heure</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for rdv in rdvs %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ rdv.date|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ rdv.heure|time:"H:i" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                    <span class="text-blue-800">{{ rdv.patient.user.get_initials }}</span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{ rdv.patient.user.nom }}</div>
+                                    <div class="text-sm text-gray-500">{{ rdv.patient.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                {% if rdv.statut == 'confirme' %}bg-green-100 text-green-800
+                                {% elif rdv.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ rdv.get_statut_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if rdv.statut == 'en_attente' %}
+                            <div class="flex space-x-2">
+                                <a href="{% url 'confirmer_rendezvous' rdv.pk %}" 
+                                   class="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm flex items-center">
+                                    <i class="fas fa-check mr-1"></i> Confirmer
+                                </a>
+                                <a href="{% url 'refuser_rendezvous' rdv.pk %}" 
+                                   class="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm flex items-center">
+                                    <i class="fas fa-times mr-1"></i> Refuser
+                                </a>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            <i class="far fa-calendar-times text-2xl mb-2"></i>
+                            <p>Aucun rendez-vous trouve</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if rdvs %}
+        <div class="mt-4 text-sm text-gray-500">
+            Total de rendez-vous: <span class="font-medium">{{ rdvs|length }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

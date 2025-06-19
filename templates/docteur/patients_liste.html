@@ -1,0 +1,58 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-8">Mes Patients</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for patient in patients %}
+        <div class="bg-white rounded-xl shadow overflow-hidden hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                        {{ patient.user.get_initials }}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg">{{ patient.user.nom }} {{ patient.user.prenom }}</h3>
+                        <p class="text-sm text-gray-500">{{ patient.user.email }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-2 mt-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Dernier RDV:</span>
+                        <span>
+                            {% with patient.rendezvous_set.all|first as last_rdv %}
+                                {% if last_rdv %}
+                                    {{ last_rdv.date|date:"d/m/Y" }}
+                                {% else %}
+                                    Jamais
+                                {% endif %}
+                            {% endwith %}
+                        </span>
+                    </div>
+                    
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Total RDV:</span>
+                        <span>{{ patient.rendezvous_set.count }}</span>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex space-x-3">
+                    <a href="{% url 'docteur_patient_detail' patient.id %}" 
+                       class="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-eye mr-2"></i> Dossier
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center text-gray-500 py-12">
+            <i class="fas fa-user-injured text-4xl mb-4"></i>
+            <p>Aucun patient enregistre</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
