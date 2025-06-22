@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Docteur, Patient
+from .models import User, Docteur, Patient,Specialite
+
 
 class CustomUserAdmin(UserAdmin):
     model = User
@@ -53,6 +54,20 @@ class DocteurAdmin(admin.ModelAdmin):
         return obj.user.email
     user_email.short_description = "Email"
 
+
+@admin.register(Specialite)
+class SpecialiteAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'description_short')
+    search_fields = ('nom',)
+    
+    def description_short(self, obj):
+        return obj.description[:50] + '...' if obj.description else ''
+    description_short.short_description = 'Description'
+
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Patient, PatientAdmin)
 admin.site.register(Docteur, DocteurAdmin)
+
+
+
+

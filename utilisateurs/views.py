@@ -1,8 +1,8 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth import login, logout
-from .forms import RegisterForm, LoginForm
+from django.contrib.auth import login as django_login, logout
+from .forms import RegisterForm, LoginForm, AdminProfileForm, ProfileUpdateForm, DoctorProfileForm, PatientProfileForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
@@ -15,6 +15,9 @@ import random
 from django.conf import settings
 from django.db.models import Q
 
+
+
+from .forms import SpecialiteForm
 
 
 
@@ -43,13 +46,13 @@ def register_view(request):
                 
                 try:
                     send_mail(
-                        "Vérification compte médecin",
+                        "Verification compte medecin",
                         f"Votre code: {user.verification_code}",
                         "no-reply@votrecabinet.com",
                         [user.email],
                         fail_silently=False,
                     )
-                    messages.info(request, "Code envoyé par email")
+                    messages.info(request, "Code envoyd par email")
                 except:
                     messages.warning(request, f"Erreur d'envoi. Notez ce code: {user.verification_code}")
             
@@ -127,16 +130,16 @@ def register_view(request):
 
 
 
-def login_view(request):
+def login(request):
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            # Si le docteur n'est pas encore vérifié, rediriger vers la page d'activation
+            # Si le docteur n'est pas encore verifie, rediriger vers la page d'activation
             if hasattr(user, 'is_doctor_request') and user.is_doctor_request and not getattr(user, 'is_verified', True):
                 return redirect('activer_medecin')
-            login(request, user)
-            # Redirection basée sur le rôle
+            django_login(request, user)
+            # Redirection basee sur le role
             if user.role == 'patient':
                 return redirect('patient_dashboard')
             elif user.role == 'docteur':
@@ -217,7 +220,7 @@ def dashboard_admin(request):
         # Gestion des erreurs pour le debogage
         if settings.DEBUG:
             raise e
-        messages.error(request, "Une erreur est survenue lors du chargement des données.")
+        messages.error(request, "Une erreur est survenue lors du chargement des donnees.")
         context = {}
 
     return render(request, 'dashboard/admed_dashboard.html', context)
@@ -307,97 +310,33 @@ def patient_dashboard(request):
     }
     return render(request, 'dashboard/patient_dashboard.html', context)
 
+
 @login_required
 @user_passes_test(lambda u: u.role == 'docteur')
 def docteur_dashboard(request):
-    if not hasattr(request.user, 'docteur'):
-        return redirect('index')
+    if not hasattr(request.user, 'docteur_profile'):
+        messages.error(request, "Profil docteur non configuré")
+        return redirect('docteur_profile')
     
+    docteur = request.user.docteur_profile
     today = timezone.now().date()
-    
-    # Rendez-vous du jour
-    today_rdv = RendezVous.objects.filter(
-        docteur=request.user.docteur,
-        date=today
-    ).order_by('heure')
-    
-    # Prochain RDV
-    next_rdv = RendezVous.objects.filter(
-        docteur=request.user.docteur,
-        date__gte=today
-    ).order_by('date', 'heure').first()
-    
-    # Statistiques
-    monthly_rdv = RendezVous.objects.filter(
-        docteur=request.user.docteur,
-        date__month=today.month,
-        date__year=today.year
-    ).count()
-    
-    completed_rdv = RendezVous.objects.filter(
-        docteur=request.user.docteur,
-        statut='confirme',
-        date__month=today.month,
-        date__year=today.year
-    ).count()
-    
-    # Creneaux disponibles
-    available_slots = CreneauHoraire.objects.filter(
-        docteur=request.user.docteur,
-        disponible=True,
-        jour__gte=today
-    ).order_by('jour', 'heure_debut')
-    
-    context = {
-        'today_rdv': today_rdv,
-        'next_rdv': next_rdv,
-        'monthly_rdv': monthly_rdv,
-        'completed_rdv': completed_rdv,
-        'available_slots': available_slots,
-        'specialite': request.user.docteur.specialite,
-    }
-    
-    return render(request, 'dashboard/docteur_dashboard.html', context)
-    today = timezone.now().date()
-    docteur = request.user.docteur
     
     context = {
         'today_rdv': RendezVous.objects.filter(
             docteur=docteur,
             date=today,
-            statut='confirme'  # Utilisez 'confirme' comme défini dans models.py
+            statut='confirme'
         ).order_by('heure'),
-        
         'pending_rdv': RendezVous.objects.filter(
             docteur=docteur,
             date__gte=today,
             statut='en_attente'
         ).count(),
-        
-        'specialite': docteur.specialite
+        'specialite': docteur.specialite,
+        'docteur': docteur
     }
     return render(request, 'dashboard/docteur_dashboard.html', context)
 
-
-
-@user_passes_test(lambda u: u.is_superuser)
-def admin__patients(request):
-    patients = Patient.objects.all().select_related('user')
-    
-    # Filtres
-    search_query = request.GET.get('search', '')
-    if search_query:
-        patients = patients.filter(
-            Q(user__nom__icontains=search_query) |
-            Q(user__prenom__icontains=search_query) |
-            Q(user__email__icontains=search_query)
-        )
-    
-    context = {
-        'patients': patients,
-        'search_query': search_query
-    }
-    return render(request, 'admin/patients_liste.html', context)
 
 
 @login_required
@@ -436,6 +375,303 @@ def patient_detail(request, patient_id):
     }
     
     return render(request, 'patients/patient_detail.html', context)
+
+
+
+
+@login_required
+def profile_view(request):
+    user = request.user
+    
+    if user.role == 'admin':
+        return admin_profile(request)
+    elif user.role == 'docteur':
+        return docteur_profile(request)
+    elif user.role == 'patient':
+        return patient_profile(request)
+    else:
+        return redirect('index')
+
+@login_required
+@user_passes_test(lambda u: u.role == 'admin')
+def admin_profile(request):
+    if request.method == 'POST':
+        form = AdminProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profil mis à jour avec succès")
+            return redirect('admin_profile')
+    else:
+        form = AdminProfileForm(instance=request.user)
+    
+    context = {
+        'form': form,
+        'profile_data': {
+            'full_name': f"{request.user.prenom} {request.user.nom}",
+            'email': request.user.email,
+            'role': request.user.get_role_display(),
+            'phone': request.user.telephone if hasattr(request.user, 'telephone') else None,
+            'date_joined': request.user.date_joined.strftime("%d/%m/%Y")
+        },
+        'stats': {
+            'total_patients': Patient.objects.count(),
+            'total_doctors': Docteur.objects.filter(est_approuve=True).count(),
+            'pending_doctors': Docteur.objects.filter(est_approuve=False).count()
+        }
+    }
+    return render(request, 'profile/admin_profile.html', context)
+
+
+
+@login_required
+@user_passes_test(lambda u: u.role == 'docteur')
+def docteur_profile(request):
+    docteur = request.user.docteur_profile
+    
+    if request.method == 'POST':
+        # Formulaire user (informations de base)
+        user_form = ProfileUpdateForm(request.POST, instance=request.user)
+        # Formulaire docteur (informations professionnelles)
+        doctor_form = DoctorProfileForm(request.POST, instance=docteur)
+        
+        if user_form.is_valid() and doctor_form.is_valid():
+            user_form.save()
+            doctor_form.save()
+            messages.success(request, "Profil mis à jour avec succes")
+            return redirect('docteur_profile')
+    else:
+        user_form = ProfileUpdateForm(instance=request.user)
+        doctor_form = DoctorProfileForm(instance=docteur)
+    specialites = Specialite.objects.all()
+    
+    context = {
+        'user_form': user_form,
+        'doctor_form': doctor_form,
+        'specialites': specialites, 
+        'profile_data': {
+            'full_name': f"{request.user.prenom} {request.user.nom}",
+            'nom': request.user.nom,
+            'prenom': request.user.prenom,
+            'email': request.user.email,
+            'telephone': request.user.telephone,
+            'specialite': docteur.specialite.nom if docteur.specialite else "Non specifie",
+            'numero_licence': docteur.numero_licence,
+            'bio': docteur.bio,
+            'experience': docteur.experience,
+            'consultation_fee': docteur.consultation_fee,
+            'est_approuve': docteur.est_approuve,
+            'profile_picture': request.user.profile_picture.url if hasattr(request.user, 'profile_picture') and request.user.profile_picture else None
+        },
+        'stats': {
+            'rdv_today': RendezVous.objects.filter(
+                docteur=docteur, 
+                date=timezone.now().date()
+            ).count(),
+            'rdv_month': RendezVous.objects.filter(
+                docteur=docteur,
+                date__month=timezone.now().month
+            ).count(),
+            'available_slots': CreneauHoraire.objects.filter(
+                docteur=docteur,
+                disponible=True,
+                jour__gte=timezone.now().date()
+            ).count()
+        }
+    }
+    return render(request, 'profile/docteur_profile.html', context)
+
+
+
+@login_required
+@user_passes_test(lambda u: u.role == 'patient')
+def patient_profile(request):
+    patient = request.user.patient_profile
+    
+    if request.method == 'POST':
+        user_form = ProfileUpdateForm(request.POST, instance=request.user)
+        patient_form = PatientProfileForm(request.POST, instance=patient)
+        
+        if user_form.is_valid() and patient_form.is_valid():
+            user_form.save()
+            
+            # Gestion spécifique pour docteur_principal si le champ existe
+            if hasattr(patient, 'docteur_principal'):
+                patient.docteur_principal = patient_form.cleaned_data.get('docteur_principal')
+                patient.save()
+            else:
+                patient_form.save()
+                
+            messages.success(request, "Profil mis à jour avec succès")
+            return redirect('patient_profile')
+    else:
+        user_form = ProfileUpdateForm(instance=request.user)
+        patient_form = PatientProfileForm(instance=patient)
+    
+    context = {
+        'user_form': user_form,
+        'patient_form': patient_form,
+        'profile_data': {
+            'full_name': f"{request.user.prenom} {request.user.nom}",
+            'email': request.user.email,
+            'phone': request.user.telephone,
+            'address': request.user.adresse if hasattr(request.user, 'adresse') else None,
+            'birth_date': request.user.date_naiss if hasattr(request.user, 'date_naiss') else None,
+            'gender': request.user.genre if hasattr(request.user, 'genre') else None,
+            'blood_group': patient.groupe_sanguin,
+            'height': patient.taille,
+            'weight': patient.poids,
+            'allergies': patient.allergies,
+            'antecedents': patient.antecedents,
+             'main_doctor': patient.docteur_principal,
+            'profile_picture': request.user.profile_picture.url if hasattr(request.user, 'profile_picture') else None
+        },
+       'stats': {
+            'total_rdv': RendezVous.objects.filter(patient=patient).count(),
+            'upcoming_rdv': RendezVous.objects.filter(
+                patient=patient,
+                date__gte=timezone.now().date()
+            ).count(),
+            'past_rdv': RendezVous.objects.filter(
+                patient=patient,
+                date__lt=timezone.now().date()
+            ).count()
+        }
+    }
+    return render(request, 'profile/patient_profile.html', context)
+        
+    
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_docteurs(request):
+    docteurs = Docteur.objects.all().select_related('user', 'specialite')
+    
+    # Filtres
+    search_query = request.GET.get('search', '')
+    status_filter = request.GET.get('status', '')
+    
+    if search_query:
+        docteurs = docteurs.filter(
+            Q(user__nom__icontains=search_query) |
+            Q(user__prenom__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(specialite__nom__icontains=search_query)
+        )
+    
+    if status_filter in ['approved', 'pending']:
+        docteurs = docteurs.filter(est_approuve=(status_filter == 'approved'))
+    
+    context = {
+        'docteurs': docteurs,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+    return render(request, 'admin/docteur_liste.html', context)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_patients(request):
+    patients = Patient.objects.all().select_related('user')
+    
+    # Filtres
+    search_query = request.GET.get('search', '')
+    if search_query:
+        patients = patients.filter(
+            Q(user__nom__icontains=search_query) |
+            Q(user__prenom__icontains=search_query) |
+            Q(user__email__icontains=search_query)
+        )
+    
+    context = {
+        'patients': patients,
+        'search_query': search_query,
+        'total_patients': patients.count()
+    }
+    return render(request, 'admin/patients_liste.html', context)
+
+
+
+
+
+@login_required
+@user_passes_test(lambda u: u.role == 'admin')
+def admin_specialites(request):
+    specialites = Specialite.objects.all().order_by('nom')
+    return render(request, 'admin/specialites/list.html', {'specialites': specialites})
+
+@login_required
+@user_passes_test(lambda u: u.role == 'admin')
+def admin_add_specialite(request):
+    if request.method == 'POST':
+        form = SpecialiteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Spécialité ajoutée avec succès")
+            return redirect('admin_specialites')
+    else:
+        form = SpecialiteForm()
+    return render(request, 'admin/specialites/add.html', {'form': form})
+
+@login_required
+@user_passes_test(lambda u: u.role == 'admin')
+def admin_edit_specialite(request, pk):
+    specialite = get_object_or_404(Specialite, pk=pk)
+    if request.method == 'POST':
+        form = SpecialiteForm(request.POST, instance=specialite)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Spécialité mise à jour")
+            return redirect('admin_specialites')
+    else:
+        form = SpecialiteForm(instance=specialite)
+    return render(request, 'admin/specialites/edit.html', {'form': form})
+
+@login_required
+@user_passes_test(lambda u: u.role == 'admin')
+def admin_delete_specialite(request, pk):
+    specialite = get_object_or_404(Specialite, pk=pk)
+    if request.method == 'POST':
+        specialite.delete()
+        messages.success(request, "Spécialité supprimée")
+        return redirect('admin_specialites')
+    return render(request, 'admin/specialites/delete.html', {'specialite': specialite})
+
+
+@login_required
+def admin_supervision_rdv(request):
+    if request.user.role != 'admin':
+        return redirect('index')
+    
+    # Recuperer tous les rendez-vous avec les relations necessaires
+    rdvs = RendezVous.objects.all().select_related(
+        'docteur__user', 
+        'patient__user',
+        'docteur__specialite'
+    ).order_by('-date', '-heure')
+    
+    # Filtres possibles
+    statut = request.GET.get('statut')
+    docteur_id = request.GET.get('docteur')
+    date = request.GET.get('date')
+    
+    if statut in dict(RendezVous.STATUT_CHOICES).keys():
+        rdvs = rdvs.filter(statut=statut)
+    
+    if docteur_id:
+        rdvs = rdvs.filter(docteur__id=docteur_id)
+    
+    if date:
+        rdvs = rdvs.filter(date=date)
+    
+    # Liste des docteurs pour le filtre
+    docteurs = Docteur.objects.filter(user__is_active=True, est_approuve=True)
+    
+    return render(request, 'admin/supervision_rdv.html', {
+        'rdvs': rdvs,
+        'statut_choices': RendezVous.STATUT_CHOICES,
+        'docteurs': docteurs
+    })
+
 
 
 

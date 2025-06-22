@@ -175,3 +175,5 @@ class CreneauDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return super().get_queryset().filter(docteur=self.request.user.docteur)
+
+

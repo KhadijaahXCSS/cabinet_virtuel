@@ -3,10 +3,10 @@
 
     <!-- LOGO -->
     <div class="flex-shrink-0">
-      <span class="text-xl font-bold tracking-wide text-white">JammRekk</span>
+      <a href="{% url 'index' %}"><span class="text-xl font-bold tracking-wide text-white">JammRekk</span></a>
     </div>
 
-    <!-- ONGLET CENTRAL -->
+    
     <div class="hidden lg:flex gap-x-12">
       <a href="{% url 'index' %}" class="text-sm font-bold text-white">Accueil</a>
 
@@ -24,13 +24,13 @@
       {% endif %}
     </div>
 
-    <!-- BOUTON DROITE -->
+    
     <div class="hidden lg:flex">
       {% if request.user.is_authenticated %}
         <form action="{% url 'logout' %}" method="post" style="display:inline;">
           {% csrf_token %}
           <button type="submit" class="text-sm font-bold text-white hover:opacity-70 bg-transparent border-0 p-0 cursor-pointer">
-            Déconnexion
+            Deconnexion
           </button>
         </form>
       {% else %}

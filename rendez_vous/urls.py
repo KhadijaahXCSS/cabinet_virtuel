@@ -2,7 +2,7 @@
 from django.urls import path
 from .views import (
     home, demander_rendezvous, liste_rendezvous_docteur,confirmer_rendezvous, refuser_rendezvous, liste_rendezvous_patient, detail_rendezvous,
-    supprimer_rendezvous, PlanningDocteurView, CreneauCreateView,  CreneauUpdateView, CreneauDeleteView
+    supprimer_rendezvous, PlanningDocteurView, CreneauCreateView,  CreneauUpdateView, CreneauDeleteView,
 )
 
 urlpatterns = [
@@ -15,6 +15,8 @@ urlpatterns = [
     path('rendezvous/<int:pk>/supprimer/', supprimer_rendezvous, name='supprimer_rendezvous'),
     path('rendezvous/<int:pk>/confirmer/', confirmer_rendezvous, name='confirmer_rendezvous'),
     path('rendezvous/<int:pk>/refuser/', refuser_rendezvous, name='refuser_rendezvous'),
+   # path('admin/rendezvous/<int:pk>/', admin_detail_rendezvous, name='admin_detail_rendezvous'),
+
 
     path('planning/', PlanningDocteurView.as_view(), name='planning_docteur'),
     path('planning/creneau/ajouter/', CreneauCreateView.as_view(), name='creneau_ajouter'),

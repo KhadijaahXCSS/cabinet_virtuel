@@ -4,6 +4,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .models import User, Docteur, Patient, Specialite
 
+
+
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, label="Mot de passe")
     confirmer_password = forms.CharField(widget=forms.PasswordInput, label="Confirmer le mot de passe")
@@ -45,8 +47,75 @@ class LoginForm(AuthenticationForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['nom', 'prenom', 'email']
+        fields = ['nom', 'prenom', 'email', 'telephone', 'date_naiss', 'adresse', 'genre']
         widgets = {
             'date_naiss': forms.DateInput(attrs={'type': 'date'}),
             'adresse': forms.Textarea(attrs={'rows': 3}),
+            'genre': forms.Select(choices=[('M', 'Masculin'), ('F', 'Féminin'), ('O', 'Autre')])
+        }
+
+        
+#Admin
+class AdminProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['nom', 'prenom', 'email', 'telephone']
+        widgets = {
+            'telephone': forms.TextInput(attrs={'placeholder': 'Numero de téléphone'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].disabled = True  # L'email ne peut pas etre modifie
+
+
+#Docteur
+class DoctorProfileForm(forms.ModelForm):
+    class Meta:
+        model = Docteur
+        fields = ['specialite', 'numero_licence', 'bio', 'experience', 'consultation_fee']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Personnalisation des champs si necessaire
+        self.fields['consultation_fee'].widget.attrs.update({'step': '0.01'})
+
+
+
+
+# Patient
+class PatientProfileForm(forms.ModelForm):
+    class Meta:
+        model = Patient
+        fields = ['docteur_principal', 'groupe_sanguin', 'taille', 'poids', 'allergies', 'antecedents']
+        widgets = {
+            'allergies': forms.Textarea(attrs={'rows': 3}),
+            'antecedents': forms.Textarea(attrs={'rows': 3}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        if 'docteur_principal' not in self.fields and hasattr(self.Meta.model, 'docteur_principal'):
+            self.fields['docteur_principal'] = forms.ModelChoiceField(
+                queryset=Docteur.objects.filter(est_approuve=True),
+                required=False,
+                label="Médecin traitant"
+            )
+
+# Specialite
+
+class SpecialiteForm(forms.ModelForm):
+    class Meta:
+        model = Specialite
+        fields = ['nom', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-textarea'}),
+        }
+        labels = {
+            'nom': "Nom de la spécialite",
+            'description': "Description"
         }

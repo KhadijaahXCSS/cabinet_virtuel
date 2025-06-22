@@ -8,28 +8,46 @@
     </div>
     
     <div class="p-6 grid md:grid-cols-3 gap-6">
-      <!-- Informations personnelles -->
+      
       <div class="md:col-span-1">
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4">Informations personnelles</h2>
-          <div class="space-y-3">
-            <p><span class="font-medium">Nom complet:</span> {{ profile_data.full_name }}</p>
-            <p><span class="font-medium">Email:</span> {{ profile_data.email }}</p>
-            <p><span class="font-medium">Téléphone:</span> {{ profile_data.phone|default:"Non renseigné" }}</p>
-            <p><span class="font-medium">Rôle:</span> {{ profile_data.role }}</p>
-          </div>
+          <h2 class="text-xl font-semibold mb-4">Modifier le profil</h2>
+          <form method="post">
+            {% csrf_token %}
+            <div class="space-y-4">
+              {{ form.as_p }}
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Enregistrer
+              </button>
+            </div>
+          </form>
         </div>
       </div>
       
-      <!-- Statistiques -->
+     
       <div class="md:col-span-2">
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+          <h2 class="text-xl font-semibold mb-4">Informations personnelles</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p><span class="font-medium">Nom complet:</span> {{ profile_data.full_name }}</p>
+              <p><span class="font-medium">Email:</span> {{ profile_data.email }}</p>
+            </div>
+            <div>
+              <p><span class="font-medium">Rôle:</span> {{ profile_data.role }}</p>
+              <p><span class="font-medium">Membre depuis:</span> {{ profile_data.date_joined }}</p>
+            </div>
+          </div>
+        </div>
+        
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div class="bg-green-100 p-4 rounded-lg">
             <h3 class="font-medium text-green-800">Patients</h3>
             <p class="text-2xl font-bold">{{ stats.total_patients }}</p>
           </div>
           <div class="bg-blue-100 p-4 rounded-lg">
-            <h3 class="font-medium text-blue-800">Médecins</h3>
+            <h3 class="font-medium text-blue-800">Medecins</h3>
             <p class="text-2xl font-bold">{{ stats.total_doctors }}</p>
           </div>
           <div class="bg-yellow-100 p-4 rounded-lg">
@@ -38,19 +56,17 @@
           </div>
         </div>
         
-        <!-- Actions rapides -->
+        
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4">Actions administratives</h2>
+          
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <a href="{% url 'admin_patients_list' %}" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
               Gérer les patients
             </a>
-            <a href="#" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
-              Valider les médecins
+            <a href="{% url 'admed_dashboard' %}" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
+              Valider les medecins
             </a>
-            <a href="#" class="bg-white p-3 rounded-lg shadow text-center hover:bg-gray-100">
-              Voir les rapports
-            </a>
+            
           </div>
         </div>
       </div>

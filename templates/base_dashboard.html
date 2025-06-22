@@ -45,7 +45,7 @@
                       </a>
 
                       
-                      <a href="#" class="block py-2 px-4 hover:bg-blue-700">
+                      <a href="{% url "admin_docteurs_list" %}" class="block py-2 px-4 hover:bg-blue-700">
                           <i class="fas fa-user-md mr-2"></i> Medecins
                       </a>
 
@@ -55,20 +55,17 @@
                       </a>
 
                     
-                      <a href="#" class="block py-2 px-4 hover:bg-blue-700">
-                          <i class="fas fa-stethoscope mr-2"></i> Specialites
-                      </a>
+                      <a href="{% url "admin_specialites" %}" class="block py-2 px-4 hover:bg-blue-700">
+                         <i class="fas fa-stethoscope mr-2"></i> Specialites
+                        </a>
 
                       
-                      <a href="#" class="block py-2 px-4 hover:bg-blue-700">
-                          <i class="fas fa-calendar-check mr-2"></i> Supervision RDV
-                      </a>
+                      <a href="{% url "admin_supervision_rdv" %}" class="block py-2 px-4 hover:bg-blue-700">
+                        <i class="fas fa-calendar-check mr-2"></i> Supervision RDV
+                        </a>
 
-
-                      <a href="#" class="block py-2 px-4 hover:bg-blue-700">
-                          <i class="fas fa-cog mr-2"></i> Parametres
-                      </a>
-                     <a href="#" class="block py-2 px-4 hover:bg-blue-700">
+                     
+                     <a href="{% url "admin_profile" %}" class="block py-2 px-4 hover:bg-blue-700">
                         <i class="fas fa-user mr-2"></i> Mon Compte
                     </a>
                       
@@ -89,7 +86,7 @@
                     <a href="{% url "docteur_patients_list" %}" class="block py-2 px-4 hover:bg-blue-700">
                         <i class="fas fa-user-injured mr-2"></i> Mes Patient
                     </a>
-                    <a href="#" class="block py-2 px-4 hover:bg-blue-700">
+                    <a href="{% url "docteur_profile" %}" class="block py-2 px-4 hover:bg-blue-700">
                         <i class="fas fa-user mr-2"></i> Mon Compte
                     </a>
                 {% elif request.user.role == 'patient' %}
@@ -103,7 +100,7 @@
                     <a href="{% url "liste_rendezvous_patient" %}" class="block py-2 px-4 hover:bg-blue-700">
                         <i class="fas fa-calendar-check mr-2"></i> Mes Rendez-vous
                     </a>
-                    <a href="#" class="block py-2 px-4 hover:bg-blue-700">
+                    <a href="{% url "patient_profile" %}" class="block py-2 px-4 hover:bg-blue-700">
                         <i class="fas fa-user mr-2"></i> Mon Compte
                     </a>
                 {% endif %}
