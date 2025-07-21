@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: cabinet-medical
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn cabinet_medical.wsgi"
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "cabinet-medical.onrender.com"
+databases:
+  - name: cabinet-db
+    databaseName: cabinet_db
+    user: cabinet_user
