@@ -39,9 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rendez_vous',  
+    'rendez_vous',     
     'utilisateurs', 
     'widget_tweaks', 
+    'rest_framework',  # Pour l'API REST
+    'corsheaders',  # Pour les CORS
+
 ]
 
 MIDDLEWARE = [
@@ -63,7 +66,9 @@ LOGOUT_REDIRECT_URL = "index"
 # Pour les medias
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+  
 
+  #A revoir 
 # Mode developpement → Console
 if config('DEBUG', default=True, cast=bool):
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

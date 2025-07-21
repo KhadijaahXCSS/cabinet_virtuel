@@ -1,6 +1,15 @@
 from django.urls import path
 from django.contrib.auth.decorators import login_required
 from . import views
+from .api import UserViewSet
+from rest_framework.routers import DefaultRouter
+
+# Creer un routeur pour les API
+# Le routeur va automatiquement creer les routes pour les vues de l'API
+# Enregistrer le UserViewSet avec le routeur
+router = DefaultRouter()
+router.register(r'users', UserViewSet, basename='user')
+#Inclure le router.urls dans urlpatterns
 
 urlpatterns = [
 
@@ -49,4 +58,4 @@ urlpatterns = [
    
 ]
 
-   
+urlpatterns += router.urls

@@ -1,9 +1,18 @@
 
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     home, demander_rendezvous, liste_rendezvous_docteur,confirmer_rendezvous, refuser_rendezvous, liste_rendezvous_patient, detail_rendezvous,
     supprimer_rendezvous, PlanningDocteurView, CreneauCreateView,  CreneauUpdateView, CreneauDeleteView,
+    
 )
+from .api import RendezVousViewSet, CreneauHoraireViewSet
+
+
+router = DefaultRouter()
+router = DefaultRouter()
+router.register(r'rendezvous_api', RendezVousViewSet, basename='rendezvous')  
+router.register(r'creneaux_api', CreneauHoraireViewSet, basename='creneaux')  
 
 urlpatterns = [
     path('', home, name='index'),
@@ -22,4 +31,7 @@ urlpatterns = [
     path('planning/creneau/ajouter/', CreneauCreateView.as_view(), name='creneau_ajouter'),
     path('planning/creneau/<int:pk>/modifier/', CreneauUpdateView.as_view(), name='creneau_modifier'),
     path('planning/creneau/<int:pk>/supprimer/', CreneauDeleteView.as_view(), name='creneau_supprimer'),
+
+
+     path('', include(router.urls)),
 ]
